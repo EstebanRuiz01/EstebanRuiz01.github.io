@@ -18,32 +18,20 @@
       <div>
         <form
           id="contact-form"
-          action="https://api.web3forms.com/submit"
+          action="https://formspree.io/f/mjygpbjd" 
           method="POST"
           class="flex flex-col gap-4"
         >
           <input
-            type="hidden"
-            name="access_key"
-            value="0175b3b9-6153-44b6-8660-88f873affd59"
-          />
-
-          <input
-            type="hidden"
-            name="subject"
-            value="New message from my portfolio"
-          />
-
-          <input
             type="text"
-            name="name"
+            name="from_name"
             placeholder="Name"
             required
             class="px-4 py-2 bg-[#1414149c] text-[var(--white)] border border-[var(--white-icon-tr)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--sec)]"
           />
           <input
             type="email"
-            name="email"
+            name="reply_to"
             placeholder="Email"
             required
             class="px-4 py-2 bg-[#1414149c] text-[var(--white)] border border-[var(--white-icon-tr)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--sec)]"
@@ -56,7 +44,6 @@
             class="px-4 py-2 bg-[#1414149c] text-[var(--white)] border border-[var(--white-icon-tr)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--sec)] resize-none"
           ></textarea>
           <button
-            id="submit-button"
             type="submit"
             class="px-4 py-2 bg-[var(--white-icon-tr)] text-[var(--white)] rounded-lg opacity-60 transition-opacity border border-[var(--white-icon-tr)] hover:opacity-100 hover:bg-[var(--white-icon-tr)]"
           >
@@ -74,47 +61,32 @@
   </div>
 </section>
 
-<script>
-  const form = document.querySelector("#contact-form");
-  const formMessage = document.querySelector("#form-message");
-  const submitButton = document.querySelector("#submit-button");
+<script type="module" is:inline>
+  const form = document.getElementById("contact-form");
+  const formMessage = document.getElementById("form-message");
 
-  form?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const originalText = submitButton.textContent;
-
-    submitButton.disabled = true;
-    submitButton.textContent = "Sending...";
-    formMessage.classList.add("hidden");
-    formMessage.textContent = "";
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
 
     try {
       const response = await fetch(form.action, {
         method: "POST",
-        body: new FormData(form),
-        headers: {
-          Accept: "application/json",
-        },
+        body: formData,
+        headers: { Accept: "application/json" },
       });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        formMessage.textContent =
-          "✅ Thank you! Your message has been sent.";
+      if (response.ok) {
         form.reset();
+        form.style.display = "none";
+        formMessage.classList.remove("hidden");
       } else {
-        formMessage.textContent =
-          "❌ Could not send your message. Please try again.";
+        const data = await response.json();
+        console.error("Error response:", data);
+        alert("There was a problem sending your message.");
       }
     } catch (error) {
-      formMessage.textContent =
-        "❌ A connection error occurred. Please try again.";
-    } finally {
-      formMessage.classList.remove("hidden");
-      submitButton.disabled = false;
-      submitButton.textContent = originalText;
+      console.error("Error:", error);
+      alert("There was a problem sending your message.");
     }
   });
 </script>
